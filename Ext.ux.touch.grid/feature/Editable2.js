@@ -127,15 +127,21 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
     openFieldEditor: function(grid, record, dataIndex) {
 
         // find the position of the record in the store to find the current row number
-        var rowIndex = grid.getStore().indexOf(record) + 1; // add one, because we have a header row too
+        var rowIndex = grid.getStore().indexOf(record);
 
-        // find the field element
-        var fieldDom = grid.element.query('.x-grid-cell[dataindex='+dataIndex+']')[rowIndex],
+        // check if the field dom is already rendered
+        if(!grid.getItemAt(rowIndex)) {
+            // the field dom is not yet rendered, this can only be the case when a 
+            // new record is created at the bottom, so scroll to the bottom
+            grid.getScrollable().getScroller().scrollToEnd();
+        }
+
+        // now the field dom is definitelly rendered, so open the editor
+        var rowElement = grid.getItemAt(rowIndex).element,
+            fieldDom = rowElement.query('.x-grid-cell[dataindex='+dataIndex+']')[0],
             element = Ext.get(fieldDom);
-
-        // ok, let's open the next editor
-        // this is only a quick fix version and will not work for non-visible rows
-        if(element) this.startEdit(grid, element, record);
+        
+        this.startEdit(grid, element, record);
     },
 
     handleFieldDestroy: function(cellEl, htmlValue) {
