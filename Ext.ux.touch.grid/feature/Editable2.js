@@ -134,8 +134,8 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
             element = Ext.get(fieldDom);
 
         // ok, let's open the next editor
-        this.startEdit(grid, element, record);
-
+        // this is only a quick fix version and will not work for non-visible rows
+        if(element) this.startEdit(grid, element, record);
     },
 
     handleFieldDestroy: function(cellEl, htmlValue) {
