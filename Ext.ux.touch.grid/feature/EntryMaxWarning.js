@@ -10,7 +10,7 @@ Ext.define('Ext.ux.touch.grid.feature.EntryMaxWarning', {
         // create a component to display if there are to many entries
         var component = Ext.create('Ext.Component', {
                 docked: 'top',
-                tpl: '<div class="notice">'+Bancha.t('Please narrow down your search, there are still {totalCount} matches!')+'</div>',
+                tpl: '<div class="notice">'+Bancha.t('Please narrow down your selection, first {count} of {totalCount} records are displayed!')+'</div>',
                 showAnimation: 'fadeIn',
                 hideAnimation: 'fadeOut'
             });
@@ -21,7 +21,10 @@ Ext.define('Ext.ux.touch.grid.feature.EntryMaxWarning', {
         grid.getStore().on('refresh', function(store, data) {
             if(store.getTotalCount() > store.getCount()) {
                 // display/update the warning
-                component.setData({totalCount: store.getTotalCount()});
+                component.setData({
+                    count: store.getCount(),
+                    totalCount: store.getTotalCount()
+                });
                 component.show();
             }
             if(store.getTotalCount() === store.getCount()) {
