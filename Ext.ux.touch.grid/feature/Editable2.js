@@ -28,7 +28,10 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
     init: function(grid) {
         var me = this;
         grid.openFieldEditor = function(record, dataIndex) {
-            me.openFieldEditor.call(me, grid, record, dataIndex);
+            return me.openFieldEditor.call(me, grid, record, dataIndex);
+        };
+        grid.endFieldEditing = function() {
+            return me.endEdit.call(me, grid);
         };
     },
 
@@ -122,7 +125,7 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
 
     /**
      * A public method to trigger starting of an edit action
-     * @return void
+     * @return editor
      */
     openFieldEditor: function(grid, record, dataIndex) {
 
@@ -141,7 +144,7 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
             fieldDom = rowElement.query('.x-grid-cell[dataindex='+dataIndex+']')[0],
             element = Ext.get(fieldDom);
         
-        this.startEdit(grid, element, record);
+        return this.startEdit(grid, element, record);
     },
 
     handleFieldDestroy: function(cellEl, htmlValue) {
@@ -195,6 +198,8 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
         }
 
         grid.fireEvent('editstart', grid, this, editor, dataIndex, rec);
+
+        return editor;
     },
 
     endEdit: function(grid) {
@@ -214,9 +219,13 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
             renderTo  = field.getRenderTo(),
             column    = grid.getColumn(editor.name);
 
-
         // bug fix workaround, not sure if this is a bug in sencha or in this code
         try {
+            // selectfields are not closing the picker when they are destroyed
+            if(field.isXType('selectfield')) {
+                if(field.picker)    { field.picker.destroy(); }
+                if(field.listPanel) { field.listPanel.destroy(); }
+            }
             field.destroy();
         } catch(e) {
             // just ignore
