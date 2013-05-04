@@ -136,7 +136,7 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
         if(!grid.getItemAt(rowIndex)) {
             // the field dom is not yet rendered, this can only be the case when a 
             // new record is created at the bottom, so scroll to the bottom
-            grid.getScrollable().getScroller().scrollToEnd();
+            this.scrollToRecordAt(grid, rowIndex);
         }
 
         // now the field dom is definitelly rendered, so open the editor
@@ -145,6 +145,31 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
             element = Ext.get(fieldDom);
         
         return this.startEdit(grid, element, record);
+    },
+
+    /**
+     * Scrolls to the given record (without an animation, otherwise 
+     * might throw errors if you wnat to use it directly)
+     * @param  {Ext.ux.touch.grid.List} grid A grid
+     * @param  {Number} position             The position of the record in the store
+     * @return {void}
+     */
+    scrollToRecordAt: function(grid, position) {
+        if(!grid.getAt(0)) {
+            return; // no elements
+        }
+        var lineHeight = grid.getAt(0).element.getHeight(),
+            viewportHeight = grid.element.getHeight() - lineHeight, // subtract header height
+            linesInViewport = viewportHeight/lineHeight, // might have decimals
+            recordCount = grid.getStore().getCount(),
+            linesAfterPosition = recordCount-position,
+            scroller = grid.getScrollable().getScroller();
+
+        if(linesAfterPosition > linesInViewport) {
+            scroller.scrollTo(0,lineHeight*position,/*only undefined is recognized as false*/undefined);
+        } else {
+            scroller.scrollToEnd();
+        }
     },
 
     handleFieldDestroy: function(cellEl, htmlValue) {
