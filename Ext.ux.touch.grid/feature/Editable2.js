@@ -187,6 +187,10 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
             return;
         }
 
+        if (typeof column.isEditable === 'function' && !column.isEditable(rec.data)) {
+            return;
+        }
+
         if(this.getActiveEditor()) {
             // close the currently active editor first
             this.endEdit(grid);
