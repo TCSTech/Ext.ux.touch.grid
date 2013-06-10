@@ -221,6 +221,10 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
         if(Ext.isFunction(editor.field.focus) && !Ext.isFunction(editor.field.showPicker)) {
             editor.field.focus();
         }
+        // for text fields also select the old text
+        if(Ext.isFunction(editor.field.select) && !Ext.isFunction(editor.field.showPicker)) {
+            editor.field.select();
+        }
         // if it's a select field open the picker
         if(Ext.isFunction(editor.field.showPicker)) {
             editor.field.showPicker();
