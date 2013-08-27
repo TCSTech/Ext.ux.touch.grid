@@ -10,7 +10,7 @@ Ext.define('Ext.ux.touch.grid.feature.EntryMaxWarning', {
         // create a component to display if there are to many entries
         var component = Ext.create('Ext.Component', {
                 docked: 'top',
-                tpl: '<div class="notice">'+Bancha.t('Please narrow down your selection, first {count} of {totalCount} records are displayed!')+'</div>',
+                tpl: '<div class="notice">'+JSL.__('Please narrow down your selection, first {count} of {totalCount} records are displayed!')+'</div>',
                 showAnimation: 'fadeIn',
                 hideAnimation: 'fadeOut'
             });

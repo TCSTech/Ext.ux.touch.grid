@@ -21,7 +21,6 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
         lastEditedColumn: null
     },
 
-
     /**
      * Provide the openEditor function publically in the grid component
      */
@@ -35,14 +34,22 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
         };
     },
 
-
     handleDoubleTap : function(grid, index, rowEl, rec, e) {
         this.handleTap(grid, index, rowEl, rec, e); // do the same
     },
 
     handleTap : function(grid, index, rowEl, rec, e) {
         var editor = this.getActiveEditor();
-
+        
+        //retrieve all classes of the target
+        var classList = e.target.classList;
+        //loop through the classes to see if this was a clearIconTap
+        for (var i=0;i<classList.length;i++) {
+            if (classList[i] === 'x-clear-icon') {
+                rec.set('dot_code',null);
+            }
+        }
+        
         if (editor) {
             if (!e.getTarget('.x-field')) {
                 this.endEdit(grid);
@@ -54,6 +61,16 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
 
         if (!cellEl) {
             return;
+        } else {
+            //set the activeColumnDataIndex on the grid (used for KeyEvents)
+            var dI = cellEl.getAttribute('dataindex');
+            Ext.Viewport.fireEvent('dataindexclickupdate', dI);
+            
+            //attach a keydown event to communicate with the KeyEvents controller
+            //no need to remove the listener either, the target is destroyed after editing
+            target.onkeydown = function(e) {
+                Ext.Viewport.fireEvent('gridfieldkeydown', e);
+            };
         }
 
         //prevent the handleTap event from firing startEdit twice
@@ -90,7 +107,6 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
     },
 
     onEditorAction: function(textfield, e, options) {
-
         // the editor is already closed from the onFieldBlur,
         // just stop the event and if necessary open the next editor
         e.stopEvent();
@@ -115,7 +131,7 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
             newColumnIndex++;
         }
         if(newColumnIndex===columns.length) {
-            Bancha.log.error("We couldn't find any further editor, even when there was a column editNext:true config.");
+            Ext.logger.error("We couldn't find any further editor, even when there was a column editNext:true config.");
             return;
         }
 
@@ -128,9 +144,9 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
      * @return editor
      */
     openFieldEditor: function(grid, record, dataIndex) {
-
         // find the position of the record in the store to find the current row number
-        var rowIndex = grid.getStore().indexOf(record);
+        var rowIndex = grid.getStore().indexOf(record),
+            me=this;
 
         // check if the field dom is already rendered
         if(!grid.getItemAt(rowIndex)) {
@@ -141,10 +157,19 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
 
         // now the field dom is definitelly rendered, so open the editor
         var rowElement = grid.getItemAt(rowIndex).element,
-            fieldDom = rowElement.query('.x-grid-cell[dataindex='+dataIndex+']')[0],
-            element = Ext.get(fieldDom);
-        
-        return this.startEdit(grid, element, record);
+            fieldDom = rowElement.query('.x-grid-cell[dataindex='+dataIndex+']')[0];
+    
+        //attach a keydown event to communicate with the KeyEvents controller
+        //no need to remove the listener either, the fieldDom is destroyed after editing
+        if (fieldDom) {
+            var element = Ext.get(fieldDom);
+            fieldDom.onkeydown = function(e) {
+                Ext.Viewport.fireEvent('gridfieldkeydown', e);
+            };
+            return this.startEdit(grid, element, record);
+        } else {
+            return false;
+        }
     },
 
     /**
@@ -214,7 +239,6 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
             change : 'onSelectFieldChange', //this is for select fields with an picker
             action : 'onEditorAction' // this is if the user presses action (enter/go) in a textfield
         });
-
         this.setActiveEditor(editor);
 
         // focus on input fields
@@ -239,7 +263,7 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
         if (!grid) {
             grid = this.getGrid();
         }
-
+        
         if(!this.getActiveEditor()) {
             return; // if there's no active editor, nothing to do here
         }
@@ -281,5 +305,4 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
         this.setLastEditedColumn(column);
     }
 });
-
 //eof
