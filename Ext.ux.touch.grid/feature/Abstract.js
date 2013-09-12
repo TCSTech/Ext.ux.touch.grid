@@ -47,8 +47,20 @@ Ext.define('Ext.ux.touch.grid.feature.Abstract', {
 
                             eventFn = eventFn.fn;
                         }
-
-                        cls.on(eventName, me[eventFn], me, eventCfg || {});
+                        
+                        /*
+                         * object.getEventListeners() is broken in ST 2.2.x so
+                         * we'll use a temporary workaround.
+                         */
+                        
+                        if (!cls.gridListeners) {
+                            cls.gridListeners = [];
+                        }
+                        
+                        if (cls.gridListeners.indexOf(eventName) === -1) {
+                            cls.on(eventName, me[eventFn], me, eventCfg || {});
+                            cls.gridListeners.push(eventName);
+                        }
                     }
                 } else {
                     console.warn('Class could not be found in config.events Object');

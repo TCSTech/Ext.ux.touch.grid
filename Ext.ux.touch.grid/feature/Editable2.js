@@ -43,6 +43,11 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
         
         //retrieve all classes of the target
         var classList = e.target.classList;
+        
+        if (classList.contains('x-form-field')) {
+            return;
+        }
+        
         //loop through the classes to see if this was a clearIconTap
         for (var i=0;i<classList.length;i++) {
             if (classList[i] === 'x-clear-icon') {
@@ -62,6 +67,16 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
         if (!cellEl) {
             return;
         } else {
+            //if cellEl doesn't have a parentElement then it has been removed from the
+            //grid and a new instance is being used.
+            if (!cellEl.dom.parentElement) {
+                var dataIndex = cellEl.getAttribute('dataindex'),
+                    column    = grid.getColumn(dataIndex);
+                
+                // open the new editor
+                this.openFieldEditor(grid, rec, dataIndex);
+            }
+            
             //set the activeColumnDataIndex on the grid (used for KeyEvents)
             var dI = cellEl.getAttribute('dataindex');
             Ext.Viewport.fireEvent('dataindexclickupdate', dI);
@@ -239,6 +254,8 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
             change : 'onSelectFieldChange', //this is for select fields with an picker
             action : 'onEditorAction' // this is if the user presses action (enter/go) in a textfield
         });
+        
+        //set the new editor
         this.setActiveEditor(editor);
 
         // focus on input fields
