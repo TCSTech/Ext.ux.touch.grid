@@ -162,9 +162,9 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
         // find the position of the record in the store to find the current row number
         var rowIndex = grid.getStore().indexOf(record),
             me=this;
-
+    
         // check if the field dom is already rendered
-        if(!grid.getItemAt(rowIndex)) {
+        if(grid.getScrollable().getScroller().maxPosition.y > 0) {
             // the field dom is not yet rendered, this can only be the case when a 
             // new record is created at the bottom, so scroll to the bottom
             this.scrollToRecordAt(grid, rowIndex);
@@ -194,22 +194,18 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
      * @param  {Number} position             The position of the record in the store
      * @return {void}
      */
-    scrollToRecordAt: function(grid, position) {
+    scrollToRecordAt: function(grid, index) {
         if(!grid.getAt(0)) {
             return; // no elements
         }
-        var lineHeight = grid.getAt(0).element.getHeight(),
-            viewportHeight = grid.element.getHeight() - lineHeight, // subtract header height
-            linesInViewport = viewportHeight/lineHeight, // might have decimals
-            recordCount = grid.getStore().getCount(),
-            linesAfterPosition = recordCount-position,
-            scroller = grid.getScrollable().getScroller();
+        
+        //get the index and offset
+        var els = grid.getViewItems(),
+            el = els[index],
+            offset = parseInt(el.element.dom.offsetHeight,10)*index;
 
-        if(linesAfterPosition > linesInViewport) {
-            scroller.scrollTo(0,lineHeight*position,/*only undefined is recognized as false*/undefined);
-        } else {
-            scroller.scrollToEnd();
-        }
+        //scroll to the selected record
+        grid.getScrollable().getScroller().scrollTo(0, offset);
     },
 
     handleFieldDestroy: function(cellEl, htmlValue) {
