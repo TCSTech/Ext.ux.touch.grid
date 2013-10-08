@@ -122,7 +122,7 @@ Ext.define('Ext.ux.touch.grid.List', {
 
     applyItemTpl : function (tpl) {
         if (!tpl) {
-            tpl = this._buildTpl(this.getColumns(), false);
+            tpl = this._buildCustomTpl(this.getColumns(), false);
         }
 
         if (!(tpl instanceof Ext.XTemplate)) {
@@ -134,14 +134,14 @@ Ext.define('Ext.ux.touch.grid.List', {
 
     updateItemTpl : function () {
         var header = this.getHeader(),
-            html = this._buildTpl(this.getColumns(), true);
-
+            html = this._buildCustomTpl(this.getColumns(), true);
+        
         header.setHtml(html.tpl);
 
         this.refresh();
     },
 
-    _buildTpl : function (columns, header) {
+    _buildCustomTpl : function (columns, header) {
         var me = this,
             tpl = [],
             c = 0,
@@ -150,12 +150,21 @@ Ext.define('Ext.ux.touch.grid.List', {
             renderers = {},
             defaults = me.getDefaults() || {},
             rowCls = me.getRowCls(),
-            column, hidden, css, styles, attributes, width, renderer, rendererName, innerText;
-
+            cssTpl = '',
+            column, hidden, css, styles, attributes, width, renderer, rendererName,
+            innerText, highlightIndex, rowHighlight, cssHighlightFn;
+    
         for (; c < cNum; c++) {
             column = columns[c];
             hidden = column.hidden;
-
+            
+            //check if we have a rowHighlight column
+            if (column.rowHighlight) {
+                highlightIndex = column.dataIndex;
+                rowHighlight = true;
+                cssHighlightFn = column.cssHighlightFn;
+            }
+            
             if (hidden) {
                 continue;
             }
@@ -171,6 +180,15 @@ Ext.define('Ext.ux.touch.grid.List', {
                 css.push(basePrefix + 'grid-cell-hd');
                 innerText = renderer.call(this, column.header);
             } else {
+                //check if we need to add the highlight feature
+                if (rowHighlight) {
+                    //create a css highlight renderer
+                    cssTpl = '{[this.cssHighlightFn(values.' + highlightIndex + ', values)]}';
+                    //add the custome renderer
+                    renderers['cssHighlightFn'] = cssHighlightFn;
+                }
+                
+                
                 innerText = '{[this.' + rendererName + '(values.' + column.dataIndex + ', values)]}';
 
                 if (column.style) {
@@ -192,7 +210,7 @@ Ext.define('Ext.ux.touch.grid.List', {
                 attributes.push('style="' + styles.join(' ') + '"');
             }
 
-            tpl.push('<div class="' + css.join(' ') + '" ' + attributes.join(' ') + '>' + innerText + '</div>');
+            tpl.push('<div class="' + css.join(' ') + ' '+ cssTpl +'" ' + attributes.join(' ') + '>' + innerText + '</div>');
         }
 
         tpl = tpl.join('');

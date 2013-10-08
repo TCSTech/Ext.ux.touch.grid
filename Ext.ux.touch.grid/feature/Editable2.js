@@ -41,6 +41,23 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
     handleTap : function(grid, index, rowEl, rec, e) {
         var editor = this.getActiveEditor();
         
+        //check to see if this uses the highlight features and row disabling
+        var columns = grid.getColumns(),
+            firstColumn = columns[0];
+        
+        //the first column contains the config for highlight / disable features
+        if (firstColumn.rowHighlight) {
+            var dataField = rec.get(firstColumn.dataIndex),
+                disabled = firstColumn.disableFn(dataField);
+            if (disabled) {
+                //revert the grid selection
+                grid.deselect(rec);
+                //don't handle the tap event
+                return;
+            }
+        }
+        
+        
         //retrieve all classes of the target
         var classList = e.target.classList;
         
@@ -71,7 +88,7 @@ Ext.define('Ext.ux.touch.grid.feature.Editable2', {
             //grid and a new instance is being used.
             if (!cellEl.dom.parentElement) {
                 var dataIndex = cellEl.getAttribute('dataindex'),
-                    column    = grid.getColumn(dataIndex);
+                    column = grid.getColumn(dataIndex);
                 
                 // open the new editor
                 this.openFieldEditor(grid, rec, dataIndex);
